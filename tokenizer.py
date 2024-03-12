@@ -4,7 +4,7 @@ from lextoplus import LexToPlus
 tokenizer = LexToPlus()
 
 # Example sentence in Thai
-sentence = "คณะมีกี่สาขา"
+sentence = "อยากสร้างแอพ"
 
 # Tokenize the sentence
 tokens = tokenizer.tokenize(sentence)
