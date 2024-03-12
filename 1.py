@@ -11,7 +11,7 @@ oracle(question="Where do I live?", context="My name is Wolfgang and I live in B
 
 
 context='เราชื่อปอน เธอชื่อคิว'
-question='เราชื่ออะไร'
+question='เราชื่อ'
 
 result = oracle(question=question, context=context)
 
