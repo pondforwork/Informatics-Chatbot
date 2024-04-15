@@ -60,45 +60,45 @@ class LineRequest(BaseModel):
 @app.post("/line/webhook")
 async def line_webhook(data: LineRequest):
     for event in data.events:
-        # Check if the event type is a message and the message type is text
         if event["type"] == "message" and event["message"]["type"] == "text":
-            reply_token = event.get("replyToken", None)
-            if reply_token is None:
-                # If reply token is missing, log an error and continue to the next event
-                print("Missing reply token in event:", event)
-                continue
+            user_input = tokenizer.tokenize(event["message"]["text"])
+            user_input = " ".join(user_input)
+            response = chatbot.respond(user_input)
+            if response is None:
+                response = "ไม่เข้าใจ กรุณาถามใหม : หรือพิมพ์ example เพื่อดูตัวอย่างคำถาม"
+            messages = [TextSendMessage(text=response)]
+            line_bot_api.reply_message(event["replyToken"], messages)
+            image_url = "free-nature-images.jpg"  # URL of the image you want to send
+            preview_url = image_url  # URL of the preview image (usually the same as the main image)
+            # Create ImageSendMessage object
+            image_message = ImageSendMessage(
+                original_content_url=image_url, preview_image_url=preview_url
+            )
+            line_bot_api.reply_message(event["replyToken"], [image_message])
+        # else:
+        #     # Assuming `response` contains a decision on whether to send an image or text.
+        #     #if "image_url" in response:
+        #     if "image_url" in response:
+        #         # Reply with an image
+        #         #https://letsenhance.io/static/8f5e523ee6b2479e26ecc91b9c25261e/1015f/MainAfter.jpg
+        #         image_url = response["image_url"]  # URL of the image you want to send
+        #         preview_url = image_url  # URL of the preview image (usually the same as the main image)
+        #         # Create ImageSendMessage object
+        #         image_message = ImageSendMessage(
+        #             original_content_url=image_url, preview_image_url=preview_url
+        #         )
 
-            # Get the user's input message
-            user_input = event["message"]["text"].strip().lower()
+        #         # Send image message as a response
+        #         line_bot_api.reply_message(event["replyToken"], [image_message])
+        #     else:
+        #         # Reply with text message
+        #         messages = [TextSendMessage(text=response)]
+        #         line_bot_api.reply_message(event["replyToken"], messages)
 
-            # Check if the user typed "image"
-            if "image" in user_input:
-                # Define the URLs for the image you want to send
-                image_url = "https://images.ctfassets.net/hrltx12pl8hq/28ECAQiPJZ78hxatLTa7Ts/2f695d869736ae3b0de3e56ceaca3958/free-nature-images.jpg?fit=fill&w=1200&h=630"  # Replace with your image URL
-                preview_url = (
-                    image_url  # The preview URL can be the same as the image URL
-                )
+    #             {
+    #   "type": "image",
+    #   "originalContentUrl": "https://example.com/original.jpg",
+    #   "previewImageUrl": "https://example.com/preview.jpg"
+    # }
 
-                # Create an ImageSendMessage object
-                image_message = ImageSendMessage(
-                    original_content_url=image_url, preview_image_url=preview_url
-                )
-
-                # Send the image message as a response using the reply token
-                line_bot_api.reply_message(reply_token, [image_message])
-
-            else:
-                # If the user did not type "image", handle the request as usual
-                tokenized_input = tokenizer.tokenize(user_input)
-                processed_input = " ".join(tokenized_input)
-                response = chatbot.respond(processed_input)
-
-                # Check if the response is None or empty and handle appropriately
-                if response is None or response == "":
-                    response = "ไม่เข้าใจ กรุณาถามใหม : หรือพิมพ์ example เพื่อดูตัวอย่างคำถาม"
-
-                # Create a TextSendMessage object
-                text_message = TextSendMessage(text=response)
-
-                # Send the text message as a response using the reply token
-                line_bot_api.reply_message(reply_token, [text_message])
+    return JSONResponse(content={"success": True})
